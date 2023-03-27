@@ -14,18 +14,21 @@
 
 // Utils
 #include <math.h>
-#include <arm_math.h>
 #include <stdint.h>
+#include <DAD_Utils/modifiedLinkedList.h>
 
-#define MOVING_AVERAGE_N 128;    // Calculate the moving averages based on the past N data packets
+#define MOVING_AVERAGE_N            128    // Calculate the moving averages based on the past N data packets
+#define MOVING_AVERAGE_N_INVERSE    (float)(1.0f/MOVING_AVERAGE_N)
+#define PACKET_TYPE_MASK            7
+#define NUM_OF_PORTS                8
 
 // TODO remove on integration
 typedef enum {TEMP = 0b000, HUM = 0b001, VIB = 0b010, MIC = 0b011, LOWBAT = 0b100, ERR = 0b101, STOP = 0b110, START = 0b111} packetType;
 
 typedef struct DAD_Calc_Struct_{
+    DAD_List   list;
     packetType  type;
     uint16_t    numSamplesCollected;
-    float       movAvgSamples[MOVING_AVERAGE_NUM];
 } DAD_Calc_Struct;
 
 // Initializes struct's values
@@ -33,14 +36,17 @@ void DAD_Calc_InitStruct(DAD_Calc_Struct* calcStruct);
 
 // Moving average
     // Takes newest reading, updates sensor's moving average
-void DAD_Calc_MovingAvg(uint8_t* packet, DAD_Calc_Struct* calcStruct);
+float DAD_Calc_MovingAvg(uint8_t* packet, DAD_Calc_Struct* calcStruct);
 
 // Average intensity
     // Takes reading, updates sensor's average intensity
-void DAD_Calc_AvgIntensity(DAD_Data_Packet* newestReading, DAD_Sensor* sensor);
+float DAD_Calc_AvgIntensity(uint8_t* packet, packetType type);
 
 // Clears moving average data. To be called on sensor disconnect
 void DAD_Calc_Clear_History(DAD_Calc_Struct* calcStruct);
+
+// Condition any packet
+float conditionPacket(uint8_t* packet);
 
 // TODO Condition Humidity data
 float DAD_Calc_ConditionHum(uint8_t* packet);
