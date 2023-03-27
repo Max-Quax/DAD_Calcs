@@ -26,7 +26,7 @@
 typedef enum {TEMP = 0b000, HUM = 0b001, VIB = 0b010, MIC = 0b011, LOWBAT = 0b100, ERR = 0b101, STOP = 0b110, START = 0b111} packetType;
 
 typedef struct DAD_Calc_Struct_{
-    DAD_List   list;
+    float       list[MOVING_AVERAGE_N];
     packetType  type;
     uint16_t    numSamplesCollected;
 } DAD_Calc_Struct;

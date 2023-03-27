@@ -2,7 +2,7 @@
 
 // Initializes struct's values
 void DAD_Calc_InitStruct(DAD_Calc_Struct* calcStruct){
-    List_clearList(&calcStruct->list);      // Init linkedlist
+    // TODO Clear list
     calcStruct->numSamplesCollected = 0;
     calcStruct->type = START;
 }
@@ -10,40 +10,29 @@ void DAD_Calc_InitStruct(DAD_Calc_Struct* calcStruct){
 // Moving average
     // Takes newest reading, updates sensor's moving average
 float DAD_Calc_MovingAvg(uint8_t* packet, DAD_Calc_Struct* calcStruct){
-    List_Elem newElement;
-    newElement.val = conditionPacket(packet);
-    newElement.prev = NULL;
-    newElement.next = NULL;
-
     // Check packet type
     packetType type = (packetType)(packet[0] & PACKET_TYPE_MASK);
+    float data = conditionPacket(packet);
+
     if(type != calcStruct->type){
-        // Clear moving avg info, start from scratch
-        List_clearList(&calcStruct->list);  // Boy oh boy, I sure hope this doesn't cause memory leakage
-        calcStruct->numSamplesCollected = 1;
+        // Restart
+        calcStruct->numSamplesCollected = 0;
         calcStruct->type = type;
-        // Add Datum to linked list
-        List_put(&calcStruct->list, &newElement);
-        return newElement.val;
+
+        // Add Datum to list
+        return data; // TODO return value;
     }
 
     // Add sample to linked list
-    if(calcStruct->numSamplesCollected < MOVING_AVERAGE_N){
-        List_put(&calcStruct->list, &newElement);
-        calcStruct->numSamplesCollected++;
-    }
-    else{
-        // Add one, remove one
-        List_put(&calcStruct->list, &newElement);
-        List_get(&calcStruct->list);
-    }
+    calcStruct->list[calcStruct->numSamplesCollected%MOVING_AVERAGE_N];
+    calcStruct->numSamplesCollected++;
 
     // Calc avg Intensity
     double sum = 0;
-    List_Elem *temp;
+    int i;
 
-    for (temp = calcStruct->list.head; temp != NULL; temp = List_next(temp)) {
-        sum += temp->val;
+    for (i = 0; i < calcStruct->numSamplesCollected; i++) {
+        sum += calcStruct->list[calcStruct->numSamplesCollected%MOVING_AVERAGE_N];
     }
     return sum * MOVING_AVERAGE_N_INVERSE;   // return sum/N
 }
