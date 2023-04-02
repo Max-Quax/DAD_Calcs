@@ -18,7 +18,7 @@
 #include <DAD_Utils/modifiedLinkedList.h>
 
 #define MOVING_AVERAGE_N            128    // Calculate the moving averages based on the past N data packets
-#define MOVING_AVERAGE_N_INVERSE    (float)(1.0f/MOVING_AVERAGE_N)
+#define FFT_SIZE                    512
 #define PACKET_TYPE_MASK            7
 #define NUM_OF_PORTS                8
 
@@ -46,7 +46,7 @@ float DAD_Calc_AvgIntensity(uint8_t* packet, packetType type);
 void DAD_Calc_Clear_History(DAD_Calc_Struct* calcStruct);
 
 // Condition any packet
-float conditionPacket(uint8_t* packet);
+float DAD_Calc_conditionPacket(uint8_t* packet, packetType type);
 
 // TODO Condition Humidity data
 float DAD_Calc_ConditionHum(uint8_t* packet);

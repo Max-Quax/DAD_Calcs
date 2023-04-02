@@ -2,7 +2,6 @@
 
 // Initializes struct's values
 void DAD_Calc_InitStruct(DAD_Calc_Struct* calcStruct){
-    // TODO Clear list
     calcStruct->numSamplesCollected = 0;
     calcStruct->type = START;
 }
@@ -14,53 +13,47 @@ float DAD_Calc_MovingAvg(uint8_t* packet, DAD_Calc_Struct* calcStruct){
     packetType type = (packetType)(packet[0] & PACKET_TYPE_MASK);
     float data = conditionPacket(packet);
 
-    if(type != calcStruct->type){
-        // Restart
-        calcStruct->numSamplesCollected = 0;
+    if(type != calcStruct->type || calcStruct->numSamplesCollected == 0){
+        calcStruct->numSamplesCollected = 1;
         calcStruct->type = type;
-
-        // Add Datum to list
-        return data; // TODO return value;
+        calcStruct->list[0]  = data;
+        return data;
     }
 
-    // Add sample to linked list
-    calcStruct->list[calcStruct->numSamplesCollected%MOVING_AVERAGE_N];
+    // Add sample
+    calcStruct->list[calcStruct->numSamplesCollected % MOVING_AVERAGE_N]  = data;
     calcStruct->numSamplesCollected++;
 
-    // Calc avg Intensity
+    // Calc avg
     double sum = 0;
     int i;
 
     for (i = 0; i < calcStruct->numSamplesCollected; i++) {
-        sum += calcStruct->list[calcStruct->numSamplesCollected%MOVING_AVERAGE_N];
+        sum += calcStruct->list[i];
     }
-    return sum * MOVING_AVERAGE_N_INVERSE;   // return sum/N
+
+    return sum / calcStruct->numSamplesCollected;   // return sum/N
 }
 
 // Average Intensity
     // Takes reading, updates sensor's average intensity
-float DAD_Calc_AvgIntensity(uint8_t* packet, packetType type){
+float DAD_Calc_AvgIntensity(uint8_t dataSet[FFT_SIZE-2], packetType type){
     // Calculate average intensity
-//    int i;
-//    int sum = 0;
-//    for(i = 0; i < ; i++){
-//        sum = sum + newestReading->data[i];
-//    }
-
-    // Calculate average intensity
-    // TODO convert Q15 to float
-    //sensor->averageIntensity = 20 * logf(sum / newestReading->dataSize);
-    return 0;
+    int i;
+    float sum = 0;
+    for(i = 0; i < FFT_SIZE-2; i++){
+        sum = sum + dataSet[i];
+    }
+    return sum / (FFT_SIZE-2);
 }
 
-
-// Clears moving average data. To be called on sensor disconnect
-void DAD_Calc_Clear_History(DAD_Calc_Struct* calcStruct){
-    List_clearList(&calcStruct->list);  // Boy oh boy, I sure hope this doesn't cause memory leakage
-}
 
 // Condition any packet
-float conditionPacket(uint8_t* packet){
+float DAD_Calc_conditionPacket(uint8_t* packet, packetType type){
+//    switch(type){
+//    case()
+//    };
+
     return packet[2];
 }
 

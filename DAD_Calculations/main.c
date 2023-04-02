@@ -22,11 +22,12 @@ int main(void)
     float compVal;
     uint8_t packet[4];
     for(i = 0; i < MOVING_AVERAGE_N; i++){
-        packet[3] = i;
+        packet[2] = i;
         sum += i;
         compVal = DAD_Calc_MovingAvg(packet, &testStruct);
-        //assert(sum / ((float)i) == compVal);
-        assert(true);
+        if(i > 0)
+            assert((float)sum / ((float)i + 1) == compVal);
+        //assert(true);
     }
 
     while(1)
